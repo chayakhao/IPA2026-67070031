@@ -32,9 +32,19 @@ def _connect(router):
 
 def _read(conn, interface_name):
     """รัน 2 คำสั่ง show แล้วให้ TextFSM แปลงเป็น list ของ dict"""
-    ip_info = conn.send_command(f"show ip interface {interface_name}", use_textfsm=True)
+    from netmiko.utilities import get_structured_data_textfsm
+
+    raw = conn.send_command(f"show ip interface {interface_name}")
+    # interface ไม่มีอยู่ → IOS ตอบ "% Invalid input detected at '^' marker."
+    # ห้ามส่งข้อความนี้เข้า TextFSM เพราะ template จะ error
+    if "Invalid input" in raw or raw.strip().startswith("%"):
+        ip_info = []
+    else:
+        ip_info = get_structured_data_textfsm(
+            raw, platform="cisco_ios", command="show ip interface"
+        )
+
     descriptions = conn.send_command("show interfaces description", use_textfsm=True)
-    # ถ้าไม่มี interface router จะตอบ "% Invalid input..." TextFSM parse ไม่ได้ จะได้ string กลับมา
     if not isinstance(ip_info, list):
         ip_info = []
     if not isinstance(descriptions, list):
