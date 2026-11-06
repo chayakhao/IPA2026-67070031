@@ -1,2 +1,14 @@
 ---
-# TODO: implement the Ansible apply playbook for Part 3.
+- name: Apply IPA2026 Loopback interface
+  hosts: routers             # ใช้กับ host ในกลุ่ม [routers] ของ inventory
+  gather_facts: false        # ไม่ต้องเก็บข้อมูลเครื่อง (เร็วขึ้น และ router ไม่รองรับแบบ Linux)
+
+  tasks:
+    - name: Configure Loopback from desired state
+      cisco.ios.ios_config:  # module สำหรับส่ง config บรรทัด CLI ไปที่ Cisco IOS
+        parents: "interface {{ interface_name }}"     # เข้าโหมด interface ก่อน
+        lines:                                        # คำสั่งที่ใส่ใต้ interface
+          - "description {{ description }}"
+          - "ip address {{ ipv4_address }} {{ netmask }}"
+          - "{{ 'shutdown' if shutdown | bool else 'no shutdown' }}"
+        defaults: true       # เทียบกับ config รวมค่า default ด้วย → apply ซ้ำได้ changed=0 (idempotent)
