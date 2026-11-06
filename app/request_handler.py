@@ -1,3 +1,5 @@
+from app.core import error, process_request_file
+
 def validate_webex_envelope(
     mentioned_people,
     attachment_path,
@@ -7,9 +9,19 @@ def validate_webex_envelope(
     Validate the target bot's actual mention and YAML attachment.
     Return an error response, or None when the envelope is valid.
     """
-    # TODO: implement according to the published specifications
-    pass
 
+    # bot_person_id ต้องเป็น string ที่ไม่ว่าง
+    if not isinstance(bot_person_id, str) or not bot_person_id:
+        return error("missing_bot_mention")
+    #mentioned_people ต้องเป็น list และต้องมี bot ของเราอยู่ในนั้น
+    if not isinstance(mentioned_people, list) or bot_person_id not in mentioned_people:
+        return error("missing_bot_mention")
+
+    #mention ถูกแล้วแต่ไม่มีไฟล์แนบ
+    if attachment_path is None:
+        return error("no_yaml")
+
+    return None
 
 def handle_webex_request(
     mentioned_people,
@@ -20,5 +32,11 @@ def handle_webex_request(
     Validate the envelope, then validate the attached YAML request.
     Return a response dictionary. Do not dispatch to a router.
     """
-    # TODO: implement according to the published specifications
-    pass
+    envelope_error = validate_webex_envelope(
+       mentioned_people, attachment_path, bot_person_id
+   )
+
+    if envelope_error is not None:
+        return envelope_error
+
+    return process_request_file(attachment_path)
