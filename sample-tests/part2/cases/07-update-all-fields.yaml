@@ -1,0 +1,18 @@
+# ชี้ไปที่ไฟล์ input ในโฟลเดอร์ fixtures/
+fixture: 07-update-all-fields.yaml
+
+# ===== ผลลัพธ์ที่คาดหวังจาก build_plan() =====
+expected:
+  status: ok
+  result: planned
+  operation: update               # interface มีอยู่แล้ว + มีฟิลด์ที่ต่าง → update
+  changes:                        # ใส่เฉพาะฟิลด์ที่ต่าง (ครั้งนี้ต่างหมดทั้ง 3 ฟิลด์)
+    ipv4:
+      from: 10.10.10.10/32        # from = ค่าเดิม (current)
+      to: 172.23.31.1/32          # to   = ค่าใหม่ (desired)
+    description:
+      from: OLD
+      to: IPA2026-67070031
+    admin_state:
+      from: down
+      to: up
